@@ -8,6 +8,8 @@ typedef std::pair<string, unsigned long long> Tick;
 class ofxFps {
 public:
 	ofxFps();
+    
+    unsigned long long getTimeMicros();
 
 	void begin();
     void tick(string name);

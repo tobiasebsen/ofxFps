@@ -1,5 +1,34 @@
 #include "ofxFps.h"
 
+#ifdef TARGET_WIN32
+#ifndef _MSC_VER
+#include <unistd.h> // this if for MINGW / _getcwd
+#include <sys/param.h> // for MAXPATHLEN
+#endif
+#endif
+
+
+#if defined(TARGET_OF_IOS) || defined(TARGET_OSX ) || defined(TARGET_LINUX) || defined(TARGET_EMSCRIPTEN)
+#include <sys/time.h>
+#endif
+
+#ifdef TARGET_OSX
+#ifndef TARGET_OF_IOS
+#include <mach-o/dyld.h>
+#include <sys/param.h> // for MAXPATHLEN
+#endif
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
+#ifdef TARGET_WIN32
+#include <mmsystem.h>
+#ifdef _MSC_VER
+#include <direct.h>
+#endif
+
+#endif
+
 struct less_first : std::binary_function<Tick,Tick,bool>
 {
     inline bool operator()( const Tick& lhs, const Tick& rhs )
@@ -17,19 +46,44 @@ ofxFps::ofxFps() {
 	this->maxLoad = 0.9f;
 }
 
+unsigned long long ofxFps::getTimeMicros() {
+#if (defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)) || defined(TARGET_EMSCRIPTEN)
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000000 + now.tv_nsec / 1000;
+#elif defined(TARGET_OSX)
+    clock_serv_t cs;
+    mach_timespec_t now;
+    host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cs);
+    clock_get_time(cs, &now);
+    mach_port_deallocate(mach_task_self(), cs);
+    return now.tv_sec * 1000000 + now.tv_nsec / 1000;
+#elif defined( TARGET_WIN32 )
+    LARGE_INTEGER freq;
+    LARGE_INTEGER counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return (counter.QuadPart / freq.QuadPart)*1000000;
+#else
+    struct timeval now;
+    gettimeofday( &now, NULL );
+    return now.tv_sec * 1000000 + now.tv_usec;
+#endif
+}
+
 void ofxFps::begin() {
-	timeBegin = ofGetElapsedTimeMicros();
+	timeBegin = getTimeMicros();
     for (auto it=ticks.begin(); it!=ticks.begin(); ++it) {
         it->second = timeBegin;
     }
 }
 
 void ofxFps::tick(string name) {
-    ticks[name] = ofGetElapsedTimeMicros();
+    ticks[name] = getTimeMicros();
 }
 
 void ofxFps::end() {
-	register unsigned long long now = ofGetElapsedTimeMicros();
+	register unsigned long long now = getTimeMicros();
 	timeFrame = now - timeEnd;
 	timeUpdate = now - timeBegin;
 	timeEnd = now;
