@@ -7,6 +7,7 @@ typedef std::pair<string, unsigned long long> Tick;
 // FRAME RATE
 class ofxFps {
 public:
+	ofxFps();
 
 	void begin();
     void tick(string name);
@@ -14,17 +15,26 @@ public:
 
 	float getFps();
 	float getLoad();
+	double getFrameTime();
+	float getFrameTimef();
+	unsigned int getFrameTimeMicros();
+	unsigned int getFrameTimeMillis();
     
     string toString(int fpsPrecision = 1, int loadPrecision = 0, bool useTicks = true);
     
     void draw(int x, int y);
     void draw(int x, int y, string label, bool drawTicks = true);
 
+	void setWarnings(float minFramerate, float maxLoad);
+
 private:
 	unsigned long long timeBegin;
 	unsigned long long timeEnd;
 	unsigned int timeFrame;
 	unsigned int timeUpdate;
+
+	float minFramerate;
+	float maxLoad;
     
     map<string, unsigned long long> ticks;
     vector<Tick> ticks_sorted;

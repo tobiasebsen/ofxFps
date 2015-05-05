@@ -8,10 +8,18 @@ struct less_first : std::binary_function<Tick,Tick,bool>
     }
 };
 
+ofxFps::ofxFps() {
+	this->timeBegin = 0;
+	this->timeEnd = 0;
+	this->timeFrame = 0;
+	this->timeUpdate = 0;
+	this->minFramerate = 10.f;
+	this->maxLoad = 0.9f;
+}
+
 void ofxFps::begin() {
 	timeBegin = ofGetElapsedTimeMicros();
-    map<string, unsigned long long>::iterator it = ticks.begin();
-    for (; it!=ticks.begin(); ++it) {
+    for (auto it=ticks.begin(); it!=ticks.begin(); ++it) {
         it->second = timeBegin;
     }
 }
@@ -21,22 +29,38 @@ void ofxFps::tick(string name) {
 }
 
 void ofxFps::end() {
-	unsigned long long now = ofGetElapsedTimeMicros();
+	register unsigned long long now = ofGetElapsedTimeMicros();
 	timeFrame = now - timeEnd;
 	timeUpdate = now - timeBegin;
 	timeEnd = now;
     
     ticks_sorted.clear();
     ticks_sorted.assign(ticks.begin(), ticks.end());
-    sort(ticks_sorted.begin(), ticks_sorted.end(), less_first());
+    std::sort(ticks_sorted.begin(), ticks_sorted.end(), less_first());
 }
 
 float ofxFps::getFps() {
-	return 1000000. / timeFrame;
+	return timeFrame != 0 ? 1000000. / timeFrame : 0.f;
 }
 
 float ofxFps::getLoad() {
 	return ((float)timeUpdate / (float)timeFrame);
+}
+
+double ofxFps::getFrameTime() {
+	return timeFrame / 1000000.;
+}
+
+float ofxFps::getFrameTimef() {
+	return timeFrame / 1000000.;
+}
+
+unsigned int ofxFps::getFrameTimeMicros() {
+	return timeFrame;
+}
+
+unsigned int ofxFps::getFrameTimeMillis() {
+	return timeFrame / 1000;
 }
 
 string ofxFps::toString(int fpsPrecision, int loadPrecision, bool useTicks) {
@@ -50,8 +74,10 @@ string ofxFps::toString(int fpsPrecision, int loadPrecision, bool useTicks) {
         for (; it!=ticks_sorted.end(); ) {
             ss << it->first;
             ss << ": ";
-            if (it->second > previous)
-                ss << ofToString(100. * (float)(it->second - previous) / (float)timeFrame, loadPrecision);
+            if (it->second > previous && timeFrame != 0) {
+				float load = 100. * (float)(it->second - previous) / (float)timeFrame;
+                ss << ofToString(load, loadPrecision);
+			}
             else
                 ss << "0";
             ss << " %";
@@ -69,21 +95,23 @@ string ofxFps::toString(int fpsPrecision, int loadPrecision, bool useTicks) {
 }
 
 void ofxFps::draw(int x, int y) {
-    if (getFps() < 20.f || getLoad() > 0.9f)
+
+    if (getFps() < minFramerate || getLoad() > maxLoad)
         ofSetColor(255, 0, 0);
     else
         ofSetColor(255);
     ofDrawBitmapString(toString(), x, y);
+	ofSetColor(255);
 }
 
 void ofxFps::draw(int x, int y, string label, bool drawTicks) {
 
-    if (getFps() < 15.f || getLoad() > 0.9f)
+    if (getFps() <minFramerate || getLoad() > maxLoad)
         ofSetColor(255, 0, 0);
     else
         ofSetColor(255);
-
     ofDrawBitmapString(label + ": " + toString(1, 0, drawTicks), x, y);
+	ofSetColor(255);
 }
 
 ofxFpsHistory::ofxFpsHistory(int size, bool autoMax) {
