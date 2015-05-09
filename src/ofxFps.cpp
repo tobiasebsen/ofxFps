@@ -63,7 +63,7 @@ unsigned long long ofxFps::getTimeMicros() {
     LARGE_INTEGER counter;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&counter);
-    return (counter.QuadPart / freq.QuadPart)*1000000;
+    return (counter.QuadPart / freq.QuadPart)*1000000 + (counter.QuadPart % freq.QuadPart)*1000000/freq.QuadPart;
 #else
     struct timeval now;
     gettimeofday( &now, NULL );
@@ -72,7 +72,9 @@ unsigned long long ofxFps::getTimeMicros() {
 }
 
 void ofxFps::begin() {
-	timeBegin = getTimeMicros();
+	register auto now = getTimeMicros();
+	timeFrame = now - timeBegin;
+	timeBegin = now;
     for (auto it=ticks.begin(); it!=ticks.begin(); ++it) {
         it->second = timeBegin;
     }
