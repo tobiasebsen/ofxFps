@@ -154,8 +154,7 @@ void ofxFps::draw(int x, int y) {
 
     if (getFps() < minFramerate || getLoad() > maxLoad)
         ofSetColor(255, 0, 0);
-    else
-        ofSetColor(255);
+
     ofDrawBitmapString(toString(), x, y);
 	ofSetColor(255);
 }
@@ -164,8 +163,7 @@ void ofxFps::draw(int x, int y, string label, bool drawTicks) {
 
     if (getFps() <minFramerate || getLoad() > maxLoad)
         ofSetColor(255, 0, 0);
-    else
-        ofSetColor(255);
+
     ofDrawBitmapString(label + ": " + toString(1, 0, drawTicks), x, y);
 	ofSetColor(255);
 }
