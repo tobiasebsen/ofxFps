@@ -72,7 +72,7 @@ unsigned long long ofxFps::getTimeMicros() {
 }
 
 void ofxFps::begin() {
-	register auto now = getTimeMicros();
+	auto now = getTimeMicros();
 	timeFrame = now - timeBegin;
 	timeBegin = now;
     for (auto it=ticks.begin(); it!=ticks.begin(); ++it) {
@@ -85,7 +85,7 @@ void ofxFps::tick(string name) {
 }
 
 void ofxFps::end() {
-	register unsigned long long now = getTimeMicros();
+	unsigned long long now = getTimeMicros();
 	timeFrame = now - timeEnd;
 	timeUpdate = now - timeBegin;
 	timeEnd = now;
