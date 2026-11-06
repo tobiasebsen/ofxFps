@@ -30,7 +30,11 @@
 
 #endif
 
+#if __cplusplus < 201703L // for retro-of-compatibility
 struct less_first : std::binary_function<Tick,Tick,bool>
+#else
+struct less_first //C++17 fix
+#endif
 {
     inline bool operator()( const Tick& lhs, const Tick& rhs )
     {
