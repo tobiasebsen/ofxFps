@@ -29,7 +29,11 @@
 
 #endif
 
+#if __cplusplus < 201703L // for retro-of-compatibility
 struct less_first : std::binary_function<Tick,Tick,bool>
+#else
+struct less_first //C++17 fix
+#endif
 {
     inline bool operator()( const Tick& lhs, const Tick& rhs )
     {
@@ -72,7 +76,7 @@ unsigned long long ofxFps::getTimeMicros() {
 }
 
 void ofxFps::begin() {
-	register auto now = getTimeMicros();
+	auto now = getTimeMicros();
 	timeFrame = now - timeBegin;
 	timeBegin = now;
     for (auto it=ticks.begin(); it!=ticks.begin(); ++it) {
@@ -85,7 +89,7 @@ void ofxFps::tick(string name) {
 }
 
 void ofxFps::end() {
-	register unsigned long long now = getTimeMicros();
+	unsigned long long now = getTimeMicros();
 	timeFrame = now - timeEnd;
 	timeUpdate = now - timeBegin;
 	timeEnd = now;
@@ -195,15 +199,15 @@ void ofxFpsHistory::draw(float x, float y, float height) {
 
     if (autoMax) {
         max = 0.f;
-        list<float>::iterator it=history.begin();
+        std::list<float>::iterator it=history.begin();
         for (; it!=history.end(); ++it) {
             if (*it > max)
                 max = *it;
         }
     }
-    list<float>::iterator it=history.begin();
+    std::list<float>::iterator it=history.begin();
     for (; it!=history.end(); ++it) {
-        ofLine(x, y+height, x, y+height-(*it/max)*height);
+        ofDrawLine(x, y+height, x, y+height-(*it/max)*height);
         x++;
     }
 }
