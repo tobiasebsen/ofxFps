@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include <list>
 
 typedef std::pair<string, unsigned long long> Tick;
 
@@ -57,7 +58,7 @@ public:
 
 private:
     int size;
-    list<float> history;
+    std::list<float> history;
     bool autoMax;
     float max;
 };
