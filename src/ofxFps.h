@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include <list>
 
 typedef std::pair<string, unsigned long long> Tick;
 

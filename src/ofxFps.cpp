@@ -1,5 +1,4 @@
 #include "ofxFps.h"
-#include <list>
 
 #ifdef TARGET_WIN32
 #ifndef _MSC_VER
